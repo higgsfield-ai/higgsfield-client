@@ -27,6 +27,9 @@ export HF_API_SECRET="your-api-secret"
 
 Get your credentials from the [Higgsfield Cloud](https://cloud.higgsfield.ai/).
 
+To use the module-level helpers with a different API host, set `HF_BASE_URL`
+before importing the package. It defaults to `https://platform.higgsfield.ai`.
+
 ## Quick Start
 
 **Synchronous:**
