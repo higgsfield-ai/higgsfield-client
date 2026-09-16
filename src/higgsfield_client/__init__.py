@@ -1,8 +1,11 @@
+import os
+
 from higgsfield_client.exceptions import (
     CredentialsMissedError,
     HiggsfieldClientError,
 )
 from higgsfield_client.http.client import (
+    BASE_URL,
     AsyncClient,
     AsyncRequestController,
     DONE_STATUSES,
@@ -19,7 +22,9 @@ from higgsfield_client.types_ import (
     Status,
 )
 
-sync_client = SyncClient()
+_base_url = os.getenv('HF_BASE_URL') or BASE_URL
+
+sync_client = SyncClient(base_url=_base_url)
 submit = sync_client.submit
 subscribe = sync_client.subscribe
 status = sync_client.status
@@ -29,7 +34,7 @@ upload = sync_client.upload
 upload_file = sync_client.upload_file
 upload_image = sync_client.upload_image
 
-async_client = AsyncClient()
+async_client = AsyncClient(base_url=_base_url)
 submit_async = async_client.submit
 subscribe_async = async_client.subscribe
 status_async = async_client.status
