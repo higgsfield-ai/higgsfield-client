@@ -1,3 +1,17 @@
+from higgsfield_client.agents import (
+    AgentAccessDeniedError,
+    AgentBackendError,
+    AgentError,
+    AgentMessage,
+    AgentSession,
+    AgentTimeoutError,
+    InsufficientCreditsError,
+    MessageStatus,
+    SessionBusyError,
+    SessionState,
+    SessionStatus,
+    TurnResult,
+)
 from higgsfield_client.exceptions import (
     CredentialsMissedError,
     HiggsfieldClientError,
@@ -41,6 +55,18 @@ upload_image_async = async_client.upload_image
 
 
 __all__ = [
+    'AgentAccessDeniedError',
+    'AgentBackendError',
+    'AgentError',
+    'AgentMessage',
+    'AgentSession',
+    'AgentTimeoutError',
+    'InsufficientCreditsError',
+    'MessageStatus',
+    'SessionBusyError',
+    'SessionState',
+    'SessionStatus',
+    'TurnResult',
     'CredentialsMissedError',
     'HiggsfieldClientError',
     'SyncRequestController',
