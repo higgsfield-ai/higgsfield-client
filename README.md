@@ -396,3 +396,48 @@ url = await higgsfield_client.upload_file_async('path/to/example.jpeg')
 # Async image upload
 url = await higgsfield_client.upload_image_async(image, format='jpeg')
 ```
+
+## Agent API
+
+The Agent API runs multi-step creative tasks in persistent sessions. Your account
+must have Agent API access and enough credits for the turn and its generations.
+
+```python
+from higgsfield_client import SyncClient
+
+# Uses HF_KEY or HF_API_KEY + HF_API_SECRET.
+client = SyncClient()
+session = client.agents.sessions.create()
+result = client.agents.sessions.run(
+    session.session_id,
+    "Generate an image of an alpine lake at sunrise. Reply with the image URL.",
+    on_question=lambda question: "Photorealistic style.",
+)
+print(result.status)  # completed | failed | awaiting_input
+print(result.text)
+print(result.asset_urls)
+
+with open("photo.jpeg", "rb") as file:
+    url = client.agents.media.upload(file.read(), extension="jpeg", type="image")
+client.agents.sessions.run(session.session_id, f"Animate this image: {url}")
+```
+
+`AsyncClient` exposes the same methods; await each call. Configure credentials
+explicitly with `api_key="key-id:key-secret"`, or override `base_url` and `timeout`
+on either client as usual. Agent resources use the same API host as generations.
+
+`run()` sends a message and polls with backoff from 2 to 10 seconds. Without an
+`on_question` callback, an agent question returns `awaiting_input`; send the answer
+in the same session to continue. The callback receives the question text and
+returns an answer string (also for `AsyncClient`). A turn defaults to a 30-minute
+wait limit, configurable with `run(..., timeout=seconds)`. `AgentTimeoutError`
+ends the local wait; the server-side turn keeps running.
+
+For manual control, use `sessions.send()`, `sessions.messages(after=message_id)`,
+and `sessions.interrupt()`. Media upload creates a slot, uploads bytes without
+API credentials, and confirms the upload before returning its URL.
+
+Errors include `SessionBusyError` (409), `AgentAccessDeniedError` (403),
+`InsufficientCreditsError` (402), and `AgentBackendError` (5xx). Mutating calls
+are not automatically retried, so a timeout does not silently submit another
+billable turn. Other HTTP errors are raised as `httpx.HTTPStatusError`.

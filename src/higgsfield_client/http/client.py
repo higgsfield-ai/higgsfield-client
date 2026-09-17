@@ -9,6 +9,7 @@ from typing import AsyncIterator, Callable, Dict, Iterator, Optional, Tuple, TYP
 
 import httpx
 
+from higgsfield_client.agents.resources import AgentsResource, AsyncAgentsResource
 from higgsfield_client.auth import get_credential_key
 from higgsfield_client.http.error import raise_for_status
 from higgsfield_client.http.retry import create_default_retry_strategy
@@ -191,6 +192,11 @@ class SyncClient(UploadMixin):
     def _transport(self) -> HttpTransport:
         retry_strategy = create_default_retry_strategy()
         return HttpTransport(self._client, retry_strategy)
+
+    @cached_property
+    def agents(self) -> AgentsResource:
+        """Agent sessions and media using this client's credentials and base URL."""
+        return AgentsResource(self._client, self._upload_client, self.base_url)
 
     def get_request_controller(self, request_id: str) -> SyncRequestController:
         return SyncRequestController(request_id, self._transport)
@@ -416,6 +422,11 @@ class AsyncClient(UploadMixin):
     def _transport(self) -> AsyncHttpTransport:
         retry_strategy = create_default_retry_strategy()
         return AsyncHttpTransport(self._client, retry_strategy)
+
+    @cached_property
+    def agents(self) -> AsyncAgentsResource:
+        """Async agent sessions and media using this client's configuration."""
+        return AsyncAgentsResource(self._client, self._upload_client, self.base_url)
 
     def get_request_controller(self, request_id: str) -> AsyncRequestController:
         return AsyncRequestController(request_id, self._transport)
