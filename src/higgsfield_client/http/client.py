@@ -33,7 +33,7 @@ if TYPE_CHECKING:
 DEFAULT_TIMEOUT = 90.0
 DEFAULT_POLLING_DELAY = 0.5
 
-BASE_URL = 'https://platform.higgsfield.ai'
+BASE_URL = 'https://api.higgsfield.ai'
 USER_AGENT = "higgsfield-client-py/1.0"
 DONE_STATUSES = (Completed, NSFW, Cancelled, Failed)
 
@@ -300,7 +300,7 @@ class SyncClient(UploadMixin):
         request_controller = self.get_request_controller(request_id)
         request_controller.cancel()
 
-    def _get_upload_url(self, content_type: str) -> Tuple[str, str]:
+    def _get_upload_url(self, content_type: str) -> Tuple[str, str, Dict[str, str]]:
         """
         Request a pre-signed upload URL for a file.
 
@@ -312,7 +312,7 @@ class SyncClient(UploadMixin):
             content_type: MIME type of the file being uploaded (e.g., 'image/png').
 
         Returns:
-            A tuple (public_url, upload_url).
+            A tuple (public_url, upload_url, upload_headers).
         """
         response = self._transport.request(
             'POST',
@@ -322,7 +322,8 @@ class SyncClient(UploadMixin):
         raise_for_status(response)
         response = response.json()
 
-        return response['public_url'], response['upload_url']
+        upload_headers = response.get('upload_headers') or {'Content-Type': content_type}
+        return response['public_url'], response['upload_url'], upload_headers
 
     def upload(
         self,
@@ -341,12 +342,12 @@ class SyncClient(UploadMixin):
         """
         data = self.ensure_bytes(data)
 
-        public_url, upload_url = self._get_upload_url(content_type)
+        public_url, upload_url, upload_headers = self._get_upload_url(content_type)
 
         response = self._upload_client.put(
             upload_url,
             content=data,
-            headers={'Content-Type': content_type}
+            headers=upload_headers,
         )
         raise_for_status(response)
 
@@ -524,7 +525,7 @@ class AsyncClient(UploadMixin):
         request_controller = self.get_request_controller(request_id)
         await request_controller.cancel()
 
-    async def _get_upload_url(self, content_type: str) -> Tuple[str, str]:
+    async def _get_upload_url(self, content_type: str) -> Tuple[str, str, Dict[str, str]]:
         """
         Request a pre-signed upload URL for a file.
 
@@ -536,7 +537,7 @@ class AsyncClient(UploadMixin):
             content_type: MIME type of the file being uploaded (e.g., 'image/png').
 
         Returns:
-            A tuple (public_url, upload_url).
+            A tuple (public_url, upload_url, upload_headers).
         """
         response = await self._transport.request(
             'POST',
@@ -546,7 +547,8 @@ class AsyncClient(UploadMixin):
         raise_for_status(response)
         response = response.json()
 
-        return response['public_url'], response['upload_url']
+        upload_headers = response.get('upload_headers') or {'Content-Type': content_type}
+        return response['public_url'], response['upload_url'], upload_headers
 
     async def upload(
         self,
@@ -565,12 +567,12 @@ class AsyncClient(UploadMixin):
         """
         data = self.ensure_bytes(data)
 
-        public_url, upload_url = await self._get_upload_url(content_type)
+        public_url, upload_url, upload_headers = await self._get_upload_url(content_type)
 
         response = await self._upload_client.put(
             upload_url,
             content=data,
-            headers={'Content-Type': content_type},
+            headers=upload_headers,
         )
         raise_for_status(response)
 
