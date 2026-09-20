@@ -46,10 +46,11 @@ class RequestController:
         response_url: Optional[str] = None,
         status_url: Optional[str] = None,
         cancel_url: Optional[str] = None,
+        base_url: str = BASE_URL,
     ) -> None:
         self.request_id = request_id
 
-        urls = self.build_urls(BASE_URL, request_id)
+        urls = self.build_urls(base_url, request_id)
 
         self.response_url = response_url or urls['response_url']
         self.status_url = status_url or urls['status_url']
@@ -73,9 +74,11 @@ class SyncRequestController(RequestController):
         response_url: Optional[str] = None,
         status_url: Optional[str] = None,
         cancel_url: Optional[str] = None,
+        base_url: str = BASE_URL,
     ) -> None:
         super().__init__(
             request_id=request_id,
+            base_url=base_url,
             response_url=response_url,
             status_url=status_url,
             cancel_url=cancel_url,
@@ -118,9 +121,11 @@ class AsyncRequestController(RequestController):
         response_url: Optional[str] = None,
         status_url: Optional[str] = None,
         cancel_url: Optional[str] = None,
+        base_url: str = BASE_URL,
     ) -> None:
         super().__init__(
             request_id=request_id,
+            base_url=base_url,
             response_url=response_url,
             status_url=status_url,
             cancel_url=cancel_url,
@@ -199,7 +204,7 @@ class SyncClient(UploadMixin):
         return AgentsResource(self._client, self._upload_client, self.base_url)
 
     def get_request_controller(self, request_id: str) -> SyncRequestController:
-        return SyncRequestController(request_id, self._transport)
+        return SyncRequestController(request_id, self._transport, base_url=self.base_url)
 
     def submit(
         self,
@@ -429,7 +434,7 @@ class AsyncClient(UploadMixin):
         return AsyncAgentsResource(self._client, self._upload_client, self.base_url)
 
     def get_request_controller(self, request_id: str) -> AsyncRequestController:
-        return AsyncRequestController(request_id, self._transport)
+        return AsyncRequestController(request_id, self._transport, base_url=self.base_url)
 
     async def submit(
         self,
