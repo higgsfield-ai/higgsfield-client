@@ -441,3 +441,25 @@ Errors include `SessionBusyError` (409), `AgentAccessDeniedError` (403),
 `InsufficientCreditsError` (402), and `AgentBackendError` (5xx). Mutating calls
 are not automatically retried, so a timeout does not silently submit another
 billable turn. Other HTTP errors are raised as `httpx.HTTPStatusError`.
+
+## Compatible backends
+
+`base_url` accepts any origin that implements the Higgsfield API — useful
+for compatible providers, proxies, and test doubles.
+
+For example, [LivePair](https://livepairai.com) exposes a wire-compatible
+endpoint backed by its own pay-per-result model catalog:
+
+```python
+from higgsfield_client import SyncClient
+
+# lp_ key goes in the secret side of the key pair.
+client = SyncClient(api_key="key:lp_YOUR_KEY", base_url="https://livepairai.com/hf")
+result = client.subscribe(
+    "bytedance/seedream/v4/text-to-image",
+    arguments={"prompt": "a lighthouse at dawn"},
+)
+```
+
+Model paths map by surface (image-to-video → Wan 3.0, image/edit → Seedream).
+Coverage and limits: https://livepairai.com/docs/hf-compat
